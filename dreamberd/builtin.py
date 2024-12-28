@@ -6,7 +6,7 @@ import math
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Union
-from dreamberd.base import NonFormattedError
+from dreamberd.base import NonFormattedError, Token, TokenType
 
 from dreamberd.processor.syntax_tree import CodeStatement
 
@@ -377,8 +377,10 @@ class Variable:
     def value(self) -> DreamberdValue:
         if self.lifetimes:
             return self.lifetimes[0].value
-        raise NonFormattedError("Variable is undefined.")
-    
+        # local import to avoid problems with recursive imports
+        from dreamberd.interpreter import determine_non_name_value
+        return determine_non_name_value(Token(TokenType.STRING, self.name, -1, -1))
+
 def all_function_keywords() -> list[str]:
 
     # this code boutta be crazy
