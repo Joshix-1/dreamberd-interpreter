@@ -8,7 +8,10 @@ from dreamberd.base import InterpretationError, NonFormattedError, Token, TokenT
 from dreamberd.builtin import KEYWORDS, Name, DreamberdValue, Variable
 from dreamberd.processor.lexer import tokenize
 from dreamberd.processor.syntax_tree import generate_syntax_tree
-from dreamberd.interpreter import interpret_code_statements, interpret_code_statements_main_wrapper, load_global_dreamberd_variables, load_globals, load_public_global_variables
+from dreamberd.interpreter import (
+    interpret_code_statements, interpret_code_statements_main_wrapper,
+    load_global_dreamberd_variables, load_globals, load_public_global_variables, run_next_callables,
+)
 
 __all__ = ['run_repl', 'run_file']
 
@@ -54,7 +57,7 @@ def run_repl() -> None:
         try:
             code, tokens = __get_next_repl_input()
             statements = generate_syntax_tree(__REPL_FILENAME, tokens, code)
-            interpret_code_statements(statements, namespaces, async_statements, when_statement_watchers)
+            run_next_callables(interpret_code_statements(statements, namespaces, async_statements, when_statement_watchers))
         except EOFError:
             print()
             exit()
