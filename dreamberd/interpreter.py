@@ -1380,7 +1380,7 @@ def interpret_statement(statement: CodeStatement, namespaces: list[Namespace], a
                 namespaces, async_statements, when_statement_watchers
             ))
             clear_temp_namespace(namespaces, prev_namespace)
-            return InterpretStatementResult(retval, to_call)
+            return InterpretStatementResult(None, to_call)
         case FunctionDefinition():
             namespaces[-1][statement.name.value] = Name(statement.name.value, DreamberdFunction(
                 args = [arg.value for arg in statement.args],
@@ -1421,7 +1421,7 @@ def interpret_statement(statement: CodeStatement, namespaces: list[Namespace], a
             )
             declare_new_variable(statement, eval_result.result, namespaces, async_statements, when_statement_watchers)
             clear_temp_namespace(namespaces, prev_namespace)
-            return eval_result
+            return InterpretStatementResult(None, eval_result.next_callables)
         case ImportStatement():
             for name in statement.names:
                 if not (v := importable_names.get(name.value)):
@@ -1572,8 +1572,7 @@ def interpret_code_statements(statements: list[tuple[CodeStatement, ...]], names
                 async_direction = -async_direction
             async_statements[i] = (async_st, async_ns, line_num + async_direction, async_direction)  # messy but works
             result = interpret_statement(statement, async_ns, async_statements, when_statement_watchers)
-            if result.next_callables:
-                run_next_callables(result.next_callables)
+            run_next_callables(result.next_callables)
         exit_on_dead_listener()
 
     return InterpretStatementResult(None, ())
